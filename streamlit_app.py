@@ -129,31 +129,55 @@ elif mode == "👥 Teams Details":
 
     st.subheader("👥 Team Details")
 
-    # Dropdown of available team numbers (unique values from the sheet)
+    # --- Step 1: Select Team ---
     team_numbers = df["Team"].dropna().unique().tolist()
     team_numbers.sort()
-
     selected_team = st.selectbox("Select Team Number", options=team_numbers)
 
     if selected_team:
-        # Filter dataframe for that team
-        team_df = df[df["Team"].astype(str) == str(selected_team)][["Name", "Phone Number", "Attendance"]]
+        # --- Step 2: Filter team members ---
+        team_df = df[df["Team"].astype(str) == str(selected_team)][["Name", "Phone Number", "Attendance"]].copy()
 
-        # Convert Attendance (0/1) → Yes/No
-        team_df["Attendance"] = team_df["Attendance"].apply(lambda x: "✅ Present" if x == 1 else "❌ Absent")
-
-        # Reset index starting from 1
+        # Reset index starting from 1 for display
         team_df.index = range(1, len(team_df) + 1)
 
-        # Count present members safely
-        team_attendance = df[df["Team"].astype(str) == str(selected_team)]["Attendance"]
-        present_count = team_attendance.apply(lambda x: int(x) if str(x).isdigit() else 0).sum()
+        # Convert attendance for display
+        team_df_display = team_df.copy()
+        team_df_display["Attendance"] = team_df_display["Attendance"].apply(
+            lambda x: "✅ Present" if str(x) == "1" else "❌ Absent"
+        )
 
+         # --- Step 3: Dynamic present count ---
+        present_count = team_df["Attendance"].apply(lambda x: int(x) if str(x).isdigit() else 0).sum()
         st.info(f"✅ Present: {present_count} / {len(team_df)}")
+        
 
         st.write(f"### Members in Team {selected_team}")
-        st.dataframe(team_df, use_container_width=True)
+        st.dataframe(team_df_display, use_container_width=True)
 
 
+        # --- Step 4: Select member to update ---
+        member_names = team_df["Name"].tolist()
+        selected_member = st.selectbox("Select member to update", options=member_names)
 
+        if selected_member:
+            member_record = team_df[team_df["Name"] == selected_member].iloc[0]
+
+            st.write(f"Updating: **{member_record['Name']} ({member_record['Phone Number']})**")
+
+            # Attendance checkbox
+            attendance_val = st.checkbox(
+                "Attendance",
+                value=True if str(member_record["Attendance"]) == "1" else False
+            )
+
+            # --- Step 5: Update button ---
+            if st.button("Update Attendance"):
+                phone = member_record["Phone Number"]
+                new_attendance = 1 if attendance_val else 0
+                update_attendance(phone, selected_team, new_attendance)
+                st.success(f"✅ Attendance updated for {selected_member}")
+
+                # Optional: refresh team_df to show updated attendance
+                df = read_data()
 
