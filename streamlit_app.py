@@ -73,7 +73,7 @@ mode = st.selectbox("Choose an action:",   [
 
 df = read_data()
 
-if mode == "Mark Attendance":
+if mode == "📝 Mark Attendance":
     st.subheader("🔍 Search & Update Attendance")
 
     # Phone number autocomplete
@@ -101,7 +101,7 @@ if mode == "Mark Attendance":
             st.error("❌ Phone number not found in sheet")
 
 
-elif mode == "Add New":
+elif mode == "➕ Add New":
     st.subheader("➕ Add New Member")
 
     with st.form("add_form", clear_on_submit=True):
@@ -118,14 +118,14 @@ elif mode == "Add New":
             else:
                 st.error("⚠️ Please fill all required fields")
 
-elif mode == "Current Attendance":
+elif mode == "📊 Current Attendance":
 
     st.subheader("📊 Current Attendance")
     values = sheet.get("F2:F150")
     total = sum(int(v[0]) for v in values if v and v[0].isdigit())
     st.write("Current attendance count is:", total)
 
-elif mode == "Teams Details":
+elif mode == "👥 Teams Details":
 
     st.subheader("👥 Team Details")
 
