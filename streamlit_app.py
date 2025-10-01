@@ -62,16 +62,10 @@ def update_attendance(phone,team, attendance):
 df = read_data()
 
 # ---------------- Streamlit App ----------------
-st.title("ESWA - ELLA")
-
-# # Mode Selection
-# mode = st.selectbox("Choose an action:",   [
-#         "📝 Mark Attendance",
-#         "➕ Add New",
-#         "📊 Current Attendance",
-#         "👥 Teams Details"
-#     ])
 with st.sidebar:
+
+    st.image("logo.png", use_container_width=True)
+    
     selected = option_menu(
         menu_title=None,
         options = ["Mark Attendance", "Add New", "Current Attendance", "Teams Details"],
