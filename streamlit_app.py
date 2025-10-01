@@ -81,7 +81,7 @@ with st.sidebar:
     )
 
 
-if selected == "📝 Mark Attendance":
+if selected == "Mark Attendance":
     st.subheader("🔍 Search & Update Attendance")
 
     # Phone number autocomplete
@@ -111,7 +111,7 @@ if selected == "📝 Mark Attendance":
             st.error("❌ Phone number not found in sheet")
 
 
-if selected == "➕ Add New":
+if selected == "Add New":
     st.subheader("➕ Add New Member")
 
     with st.form("add_form", clear_on_submit=True):
@@ -130,7 +130,7 @@ if selected == "➕ Add New":
             else:
                 st.error("⚠️ Please fill all required fields")
 
-if selected == "📊 Current Attendance":
+if selected == "Current Attendance":
 
     st.subheader("📊 Current Attendance")
     values = sheet.get("F2:F150")
@@ -143,7 +143,7 @@ if selected == "📊 Current Attendance":
     st.write("❌ Absent:", total_absent)
     st.write("👥 Total Members:", total_present + total_absent)
 
-if selected == "👥 Teams Details":
+if selected == "Teams Details":
 
     st.subheader("👥 Team Details")
 
