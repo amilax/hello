@@ -25,8 +25,8 @@ def connect_to_gsheet(spreadsheet_name, sheet_name):
     return spreadsheet.worksheet(sheet_name)
 
 # Config
-SPREADSHEET_NAME = 'eswa_ella_attendence'
-SHEET_NAME = 'attendence'
+SPREADSHEET_NAME = 'ESWA Ella Attendance New'
+SHEET_NAME = 'Teams_W_N'
 
 # Connect
 sheet = connect_to_gsheet(SPREADSHEET_NAME, SHEET_NAME)
@@ -91,10 +91,12 @@ if mode == "📝 Mark Attendance":
     # Show details
     name_input = st.text_input("Name", value=name, disabled=True)
     group_input = st.text_input("Team", value=group, disabled=False)
-    attendance_input = st.checkbox("Attendance", value=bool(attendance))
+    attendance_input = st.checkbox("Attendance")
+
+    attendance_input_val = "Present" if attendance_input else "Absent"
 
     if st.button("Update Attendance"):
-        success = update_attendance(phone,group_input, int(attendance_input))
+        success = update_attendance(phone,group_input, attendance_input_val)
         if success:
             st.success(f"✅ Attendance updated for {name} ({phone})")
         else:
@@ -111,9 +113,11 @@ elif mode == "➕ Add New":
         attendance = st.checkbox("Attendance")
         submitted = st.form_submit_button("Add Record")
 
+        attendance_input_val = "Present" if attendance else "Absent"
+
         if submitted:
             if phone and name:
-                add_data(["",name, phone, group,"", int(attendance)])
+                add_data(["",name, phone, group,"", attendance_input_val])
                 st.success(f"✅ Added new record: {name}, {phone}, Team {group}, Attendance {attendance}")
             else:
                 st.error("⚠️ Please fill all required fields")
@@ -122,8 +126,14 @@ elif mode == "📊 Current Attendance":
 
     st.subheader("📊 Current Attendance")
     values = sheet.get("F2:F150")
-    total = sum(int(v[0]) for v in values if v and v[0].isdigit())
-    st.write("Current attendance count is:", total)
+    
+    # Count how many "Present"
+    total_present = sum(1 for v in values if v and v[0].strip() == "Present")
+    total_absent = sum(1 for v in values if v and v[0].strip() == "Absent")
+
+    st.write("✅ Present:", total_present)
+    st.write("❌ Absent:", total_absent)
+    st.write("👥 Total Members:", total_present + total_absent)
 
 elif mode == "👥 Teams Details":
 
@@ -144,11 +154,11 @@ elif mode == "👥 Teams Details":
         # Convert attendance for display
         team_df_display = team_df.copy()
         team_df_display["Attendance"] = team_df_display["Attendance"].apply(
-            lambda x: "✅ Present" if str(x) == "1" else "❌ Absent"
+            lambda x: "✅ Present" if str(x) == "Present" else "❌ Absent"
         )
 
          # --- Step 3: Dynamic present count ---
-        present_count = team_df["Attendance"].apply(lambda x: int(x) if str(x).isdigit() else 0).sum()
+        present_count = team_df["Attendance"].apply(lambda x: 1 if str(x).strip().lower() == "present" else 0).sum()
         st.info(f"✅ Present: {present_count} / {len(team_df)}")
         
 
@@ -168,13 +178,13 @@ elif mode == "👥 Teams Details":
             # Attendance checkbox
             attendance_val = st.checkbox(
                 "Attendance",
-                value=True if str(member_record["Attendance"]) == "1" else False
+                value=True if str(member_record["Attendance"]) == "Present" else False
             )
 
             # --- Step 5: Update button ---
             if st.button("Update Attendance"):
                 phone = member_record["Phone Number"]
-                new_attendance = 1 if attendance_val else 0
+                new_attendance = "Present" if attendance_val else "Absent"
                 update_attendance(phone, selected_team, new_attendance)
                 st.success(f"✅ Attendance updated for {selected_member}")
 
