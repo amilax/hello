@@ -2,7 +2,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 import streamlit as st
 import pandas as pd
-
+from streamlit_option_menu import option_menu
 
 # ---------------- Google Sheets Setup ----------------
 import gspread
@@ -59,21 +59,29 @@ def update_attendance(phone,team, attendance):
         return True
     return False
 
+df = read_data()
 
 # ---------------- Streamlit App ----------------
 st.title("ESWA - ELLA")
 
-# Mode Selection
-mode = st.selectbox("Choose an action:",   [
-        "📝 Mark Attendance",
-        "➕ Add New",
-        "📊 Current Attendance",
-        "👥 Teams Details"
-    ])
+# # Mode Selection
+# mode = st.selectbox("Choose an action:",   [
+#         "📝 Mark Attendance",
+#         "➕ Add New",
+#         "📊 Current Attendance",
+#         "👥 Teams Details"
+#     ])
+with st.sidebar:
+    selected = option_menu(
+        menu_title=None,
+        options = ["Mark Attendance", "Add New", "Current Attendance", "Teams Details"],
+        icons=["pencil-square","plus-square-fill","bar-chart-fill","people-fill"],
+        menu_icon = "cast",
+        default_index=0,
+    )
 
-df = read_data()
 
-if mode == "📝 Mark Attendance":
+if selected == "📝 Mark Attendance":
     st.subheader("🔍 Search & Update Attendance")
 
     # Phone number autocomplete
@@ -103,7 +111,7 @@ if mode == "📝 Mark Attendance":
             st.error("❌ Phone number not found in sheet")
 
 
-elif mode == "➕ Add New":
+if selected == "➕ Add New":
     st.subheader("➕ Add New Member")
 
     with st.form("add_form", clear_on_submit=True):
@@ -122,7 +130,7 @@ elif mode == "➕ Add New":
             else:
                 st.error("⚠️ Please fill all required fields")
 
-elif mode == "📊 Current Attendance":
+if selected == "📊 Current Attendance":
 
     st.subheader("📊 Current Attendance")
     values = sheet.get("F2:F150")
@@ -135,7 +143,7 @@ elif mode == "📊 Current Attendance":
     st.write("❌ Absent:", total_absent)
     st.write("👥 Total Members:", total_present + total_absent)
 
-elif mode == "👥 Teams Details":
+if selected == "👥 Teams Details":
 
     st.subheader("👥 Team Details")
 
