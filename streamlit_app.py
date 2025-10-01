@@ -64,7 +64,12 @@ def update_attendance(phone,team, attendance):
 st.title("ESWA - ELLA")
 
 # Mode Selection
-mode = st.selectbox("Choose an action:", ["Mark Attendance", "Add New"])
+mode = st.selectbox("Choose an action:",   [
+        "📝 Mark Attendance",
+        "➕ Add New",
+        "📊 Current Attendance",
+        "👥 Teams Details"
+    ])
 
 df = read_data()
 
@@ -112,4 +117,43 @@ elif mode == "Add New":
                 st.success(f"✅ Added new record: {name}, {phone}, Team {group}, Attendance {attendance}")
             else:
                 st.error("⚠️ Please fill all required fields")
+
+elif mode == "Current Attendance":
+
+    st.subheader("📊 Current Attendance")
+    values = sheet.get("F2:F150")
+    total = sum(int(v[0]) for v in values if v and v[0].isdigit())
+    st.write("Current attendance count is:", total)
+
+elif mode == "Teams Details":
+
+    st.subheader("👥 Team Details")
+
+    # Dropdown of available team numbers (unique values from the sheet)
+    team_numbers = df["Team"].dropna().unique().tolist()
+    team_numbers.sort()
+
+    selected_team = st.selectbox("Select Team Number", options=team_numbers)
+
+    if selected_team:
+        # Filter dataframe for that team
+        team_df = df[df["Team"].astype(str) == str(selected_team)][["Name", "Phone Number", "Attendance"]]
+
+        # Convert Attendance (0/1) → Yes/No
+        team_df["Attendance"] = team_df["Attendance"].apply(lambda x: "✅ Present" if x == 1 else "❌ Absent")
+
+        # Reset index starting from 1
+        team_df.index = range(1, len(team_df) + 1)
+
+        # Count present members safely
+        team_attendance = df[df["Team"].astype(str) == str(selected_team)]["Attendance"]
+        present_count = team_attendance.apply(lambda x: int(x) if str(x).isdigit() else 0).sum()
+
+        st.info(f"✅ Present: {present_count} / {len(team_df)}")
+
+        st.write(f"### Members in Team {selected_team}")
+        st.dataframe(team_df, use_container_width=True)
+
+
+
 
